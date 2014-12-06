@@ -36,7 +36,7 @@ int main()
 				const auto &szTargetPath(pszArguments[2]);
 				const auto &szDeltaPath(pszArguments[3]);
 
-				if (CreateDelta(DELTA_FILE_TYPE_SET_EXECUTABLES_LATEST, DELTA_FLAG_IGNORE_FILE_SIZE_LIMIT, 0,
+				if (CreateDelta(DELTA_FILE_TYPE_SET_EXECUTABLES, DELTA_FLAG_IGNORE_FILE_SIZE_LIMIT, 0,
 					szSourcePath, szTargetPath, nullptr, nullptr, DELTA_INPUT(), nullptr, 32, szDeltaPath))
 				{
 					return 0;
