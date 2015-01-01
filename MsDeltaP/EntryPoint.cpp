@@ -19,6 +19,30 @@
 #include <iostream>
 #include <iomanip>
 
+bool ParseCommandLineArguments(int nArguments, LPWSTR *pszArguments,
+	bool &bVersion2, LPWSTR &szSourcePath, LPWSTR &szTargetPath, LPWSTR &szDeltaPath)
+{
+	if (nArguments == 5) {
+		if (!wcscmp(pszArguments[1], L"-v2")) {
+			bVersion2 = true;
+			szSourcePath = pszArguments[2];
+			szTargetPath = pszArguments[3];
+			szDeltaPath = pszArguments[4];
+
+			return true;
+		}
+	} else if (nArguments == 4) {
+		bVersion2 = false;
+		szSourcePath = pszArguments[1];
+		szTargetPath = pszArguments[2];
+		szDeltaPath = pszArguments[3];
+
+		return true;
+	}
+
+	return false;
+}
+
 int main()
 {
 	const auto szCommandLine = GetCommandLine();
@@ -30,13 +54,18 @@ int main()
 
 		if (pszArguments != nullptr)
 		{
-			if (nArguments == 4)
-			{
-				const auto &szSourcePath(pszArguments[1]);
-				const auto &szTargetPath(pszArguments[2]);
-				const auto &szDeltaPath(pszArguments[3]);
+			bool bVersion2;
+			LPWSTR szSourcePath;
+			LPWSTR szTargetPath;
+			LPWSTR szDeltaPath;
 
-				if (CreateDelta(DELTA_FILE_TYPE_SET_EXECUTABLES, DELTA_FLAG_IGNORE_FILE_SIZE_LIMIT, 0,
+			if (ParseCommandLineArguments(nArguments, pszArguments, bVersion2, szSourcePath, szTargetPath, szDeltaPath))
+			{
+				const auto qwFileTypeSet = bVersion2
+					? DELTA_FILE_TYPE_SET_EXECUTABLES_2
+					: DELTA_FILE_TYPE_SET_EXECUTABLES_1;
+
+				if (CreateDelta(qwFileTypeSet, DELTA_FLAG_IGNORE_FILE_SIZE_LIMIT, 0,
 					szSourcePath, szTargetPath, nullptr, nullptr, DELTA_INPUT(), nullptr, 32, szDeltaPath))
 				{
 					return 0;
@@ -49,7 +78,10 @@ int main()
 				std::wcout << L"Create a delta from the specified source and target files" << std::endl;
 				std::wcout << L"and write the output delta to the designated file name." << std::endl;
 				std::wcout << std::endl;
-				std::wcout << szExecutable << " [source] [target] [delta]" << std::endl;
+				std::wcout << szExecutable << " (-v2) [source] [target] [delta]" << std::endl;
+				std::wcout << std::endl;
+				std::wcout << L"-v2 is an optional parameter that will invoke CreateDelta" << std::endl;
+				std::wcout << L" with a file type set of DELTA_FILE_TYPE_SET_EXECUTABLES_2." << std::endl;
 				std::wcout << std::endl;
 
 				SetLastError(ERROR_INVALID_DATA);
